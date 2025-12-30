@@ -1,0 +1,111 @@
+{
+  "portfolio_value": 100000.0,
+  "cash": 60000.0,
+  "last_updated": "2025-12-30T19:23:02.480207",
+  "positions": {
+    "NATGAS": {
+      "ticker": "NATGAS",
+      "entry_date": "2025-12-30",
+      "entry_price": 3.936000108718872,
+      "shares": 1270.3251681635368,
+      "leverage": 2.0,
+      "highest_price": 3.936000108718872,
+      "peak_momentum": 0.5393039613196846,
+      "current_price": 3.936000108718872,
+      "current_pnl_pct": 0,
+      "signal_strength": 4,
+      "signals": "Mom12m=53.9% | Mom6m=58.8% | Mom3m=34.7% | Mom1m=22.8% | GoldenCross | AboveSMA50"
+    },
+    "DAX": {
+      "ticker": "DAX",
+      "entry_date": "2025-12-30",
+      "entry_price": 19909.140625,
+      "shares": 0.2511409253758285,
+      "leverage": 2.0,
+      "highest_price": 19909.140625,
+      "peak_momentum": 0.20381366460800954,
+      "current_price": 19909.140625,
+      "current_pnl_pct": 0,
+      "signal_strength": 4,
+      "signals": "Mom12m=20.4% | Mom6m=9.6% | Mom3m=2.2% | Mom1m=3.2% | GoldenCross | AboveSMA50"
+    },
+    "NASDAQ": {
+      "ticker": "NASDAQ",
+      "entry_date": "2025-12-30",
+      "entry_price": 19486.7890625,
+      "shares": 0.2565840880179641,
+      "leverage": 2.0,
+      "highest_price": 19486.7890625,
+      "peak_momentum": 0.290931353822691,
+      "current_price": 19486.7890625,
+      "current_pnl_pct": 0,
+      "signal_strength": 4,
+      "signals": "Mom12m=29.1% | Mom6m=9.0% | Mom3m=7.1% | Mom1m=2.2% | GoldenCross | AboveSMA50"
+    },
+    "COFFEE": {
+      "ticker": "COFFEE",
+      "entry_date": "2025-12-30",
+      "entry_price": 321.0,
+      "shares": 15.576323987538942,
+      "leverage": 1.5,
+      "highest_price": 321.0,
+      "peak_momentum": 0.6212121212121211,
+      "current_price": 321.0,
+      "current_pnl_pct": 0,
+      "signal_strength": 3,
+      "signals": "Mom12m=62.1% | Mom6m=41.6% | Mom3m=18.8% | GoldenCross | AboveSMA50"
+    },
+    "NIKKEI": {
+      "ticker": "NIKKEI",
+      "entry_date": "2025-12-30",
+      "entry_price": 39894.5390625,
+      "shares": 0.12533043663361665,
+      "leverage": 1.5,
+      "highest_price": 39894.5390625,
+      "peak_momentum": 0.18465994999907775,
+      "current_price": 39894.5390625,
+      "current_pnl_pct": 0,
+      "signal_strength": 3,
+      "signals": "Mom12m=18.5% | Mom3m=5.2% | Mom1m=4.4% | GoldenCross | AboveSMA50"
+    },
+    "HANGSENG": {
+      "ticker": "HANGSENG",
+      "entry_date": "2025-12-30",
+      "entry_price": 20041.419921875,
+      "shares": 0.2494833210167186,
+      "leverage": 1.5,
+      "highest_price": 20041.419921875,
+      "peak_momentum": 0.20519226428049442,
+      "current_price": 20041.419921875,
+      "current_pnl_pct": 0,
+      "signal_strength": 3,
+      "signals": "Mom12m=20.5% | Mom6m=10.8% | Mom1m=2.2% | GoldenCross | AboveSMA50"
+    },
+    "XLK": {
+      "ticker": "XLK",
+      "entry_date": "2025-12-30",
+      "entry_price": 116.50920104980467,
+      "shares": 42.915065548021644,
+      "leverage": 1.5,
+      "highest_price": 116.50920104980467,
+      "peak_momentum": 0.22275846077028083,
+      "current_price": 116.50920104980467,
+      "current_pnl_pct": 0,
+      "signal_strength": 3,
+      "signals": "Mom12m=22.3% | Mom3m=4.0% | Mom1m=1.4% | GoldenCross | AboveSMA50"
+    },
+    "CORN": {
+      "ticker": "CORN",
+      "entry_date": "2025-12-30",
+      "entry_price": 452.25,
+      "shares": 11.055831951354339,
+      "leverage": 1.5,
+      "highest_price": 452.25,
+      "peak_momentum": -0.046389035318924576,
+      "current_price": 452.25,
+      "current_pnl_pct": 0,
+      "signal_strength": 3,
+      "signals": "Mom6m=13.6% | Mom3m=6.5% | Mom1m=8.8% | GoldenCross | AboveSMA50"
+    }
+  }
+}
