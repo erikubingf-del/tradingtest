@@ -288,6 +288,7 @@ def main():
 Examples:
   python main.py --strategy combined
   python main.py --strategy turtle --start 2015-01-01 --end 2024-01-01
+  python main.py --leverage              # Use adaptive leverage to target 20% CAGR
   python main.py --optimize
   python main.py --decade-analysis
   python main.py --walk-forward
@@ -363,6 +364,19 @@ Examples:
         "--quick",
         action="store_true",
         help="Quick test with limited assets"
+    )
+
+    parser.add_argument(
+        "--leverage",
+        action="store_true",
+        help="Use adaptive leverage (1.5-2x) on confirmed trends to target 20% CAGR"
+    )
+
+    parser.add_argument(
+        "--max-leverage",
+        type=float,
+        default=2.0,
+        help="Maximum leverage multiplier (default: 2.0)"
     )
 
     args = parser.parse_args()
@@ -444,16 +458,42 @@ Examples:
         print("\nResults saved to monte_carlo_results.csv")
 
     else:
-        # Standard backtest
-        metrics, bt = run_single_backtest(
-            data,
-            strategy=args.strategy,
-            start_date=args.start,
-            end_date=args.end,
-            initial_capital=args.capital
-        )
+        # Standard or Leveraged backtest
+        if args.leverage:
+            print(f"Using ADAPTIVE LEVERAGE (max {args.max_leverage}x)")
+            print("  - 1x on entry, 1.5x when confirmed, 2x when strong trend")
+            print("  - Deleverages on pullbacks and momentum weakness\n")
 
-        print_results(metrics)
+            from leveraged_backtester import LeveragedBacktester, print_leveraged_results
+            from adaptive_leverage import LeverageConfig
+
+            config = BacktestConfig(
+                start_date=args.start,
+                end_date=args.end,
+                initial_capital=args.capital
+            )
+
+            leverage_config = LeverageConfig(
+                leverage_high=1.5,
+                leverage_very_high=args.max_leverage,
+                profit_to_confirm=0.03,
+                profit_to_strong=0.08
+            )
+
+            bt = LeveragedBacktester(config, args.strategy, leverage_config)
+            metrics = bt.run(data, args.start, args.end)
+
+            print_leveraged_results(metrics)
+        else:
+            metrics, bt = run_single_backtest(
+                data,
+                strategy=args.strategy,
+                start_date=args.start,
+                end_date=args.end,
+                initial_capital=args.capital
+            )
+
+            print_results(metrics)
 
         # Show annual returns
         print("\nAnnual Returns:")
