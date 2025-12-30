@@ -1,0 +1,31 @@
+{
+  "strategy_name": "BTC200MARegime",
+  "params": {
+    "roi": {
+      "0": 0.5,
+      "10080": 0.2,
+      "43200": 0.1
+    },
+    "stoploss": {
+      "stoploss": -0.15
+    },
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.03,
+      "trailing_stop_positive_offset": 0.05,
+      "trailing_only_offset_is_reached": true
+    },
+    "max_open_trades": {
+      "max_open_trades": 3
+    },
+    "buy": {
+      "entry_buffer": 0.026,
+      "ma_period": 246
+    },
+    "sell": {
+      "exit_buffer": 0.029
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2025-12-29 00:56:04.726217+00:00"
+}

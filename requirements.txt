@@ -1,0 +1,9 @@
+freqtrade
+ta-lib
+scikit-learn
+catboost
+jupyter
+notebook
+plotly
+pandas-ta
+yfinance

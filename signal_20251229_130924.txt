@@ -1,0 +1,25 @@
+Signal Date: 2025-12-29 13:09:24.498991
+Data Date: 2025-12-29 00:00:00
+Top Assets: ['SHV', 'XLF']
+SHV: 29.00
+XLF: 7.34
+EFA: 7.12
+EEM: 3.49
+NVDA: 3.40
+XLK: 2.76
+GLD: 2.74
+DBA: 2.68
+SPY: 1.91
+IWM: 1.88
+QQQ: 1.31
+XLE: -0.35
+ETH: -0.62
+XLV: -0.78
+AMZN: -0.79
+USO: -1.10
+MSFT: -1.21
+BTC: -1.83
+SOL: -2.98
+AAPL: -3.22
+TLT: -4.81
+UUP: -5.46

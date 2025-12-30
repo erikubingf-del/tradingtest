@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # ============================================================
+  # PRODUCTION BOT - BTCRegimeHold4h Strategy
+  # ============================================================
+  # Uses config-production.json with your Binance API keys
+  # Start with dry_run: true to test before going live!
+
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    restart: unless-stopped
+    container_name: freqtrade_btc_regime
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./config-production.json:/freqtrade/config.json"
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
+      --config /freqtrade/config.json
+      --strategy BTCRegimeHold4h
+
+  # ============================================================
+  # BACKTESTING - Verify strategy performance
+  # ============================================================
+  # Run with: docker compose --profile backtest run --rm backtesting
+
+  backtesting:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade_backtest
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./config-production.json:/freqtrade/config.json"
+    command: >
+      backtesting
+      --config /freqtrade/config.json
+      --strategy BTCRegimeHold4h
+      --timerange 20200401-
+      --breakdown month
+    profiles:
+      - backtest
+
+  # ============================================================
+  # DOWNLOAD DATA - Get historical BTC/USDT futures data
+  # ============================================================
+  # Run with: docker compose --profile download run --rm download-data
+
+  download-data:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade_download
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./config-production.json:/freqtrade/config.json"
+    command: >
+      download-data
+      --config /freqtrade/config.json
+      --pairs BTC/USDT:USDT
+      --timeframes 4h
+      --timerange 20200101-
+      --trading-mode futures
+    profiles:
+      - download
+
+  # ============================================================
+  # PLOT - Visualize trades
+  # ============================================================
+  # Run with: docker compose --profile plot run --rm plot
+
+  plot:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade_plot
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./config-production.json:/freqtrade/config.json"
+    command: >
+      plot-dataframe
+      --config /freqtrade/config.json
+      --strategy BTCRegimeHold4h
+      --pairs BTC/USDT:USDT
+    profiles:
+      - plot

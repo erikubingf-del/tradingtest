@@ -1,0 +1,26 @@
+{
+  "parameters": {
+    "donchian_entry": 40,
+    "donchian_exit": 20,
+    "sma_filter": 250,
+    "atr_multiplier": 2.0,
+    "risk_per_trade": 0.01,
+    "max_positions": 10,
+    "max_sector_exposure": 0.4,
+    "rebalance_freq": 1
+  },
+  "metrics": {
+    "total_return": 1.6350044136593622,
+    "cagr": 0.23953481671454147,
+    "annual_volatility": 0.260504772914514,
+    "sharpe_ratio": 0.8395431746244982,
+    "sortino_ratio": 1.020059264420648,
+    "max_drawdown": -0.21111466747172208,
+    "calmar_ratio": 1.1346194917822379,
+    "win_rate_yearly": 0.75,
+    "years": 4.511978097193703,
+    "positive_years": 3.0,
+    "total_years": 4,
+    "final_equity": 2635004.413659362
+  }
+}

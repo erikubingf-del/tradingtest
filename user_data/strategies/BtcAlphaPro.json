@@ -1,0 +1,33 @@
+{
+  "strategy_name": "BtcAlphaPro",
+  "params": {
+    "roi": {
+      "0": 100.0,
+      "30": 0.1,
+      "960": 0.5
+    },
+    "stoploss": {
+      "stoploss": -0.05
+    },
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.01,
+      "trailing_stop_positive_offset": 0.02,
+      "trailing_only_offset_is_reached": true
+    },
+    "max_open_trades": {
+      "max_open_trades": 3
+    },
+    "buy": {
+      "buy_rsi": 29,
+      "entry_ema_long": 59,
+      "entry_ema_short": 17
+    },
+    "sell": {
+      "exit_ema_long": 43,
+      "exit_ema_short": 23
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2025-12-29 00:48:21.369807+00:00"
+}

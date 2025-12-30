@@ -1,0 +1,37 @@
+{
+  "strategy_name": "BTCMomentum",
+  "params": {
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.01,
+      "trailing_stop_positive_offset": 0.02,
+      "trailing_only_offset_is_reached": true
+    },
+    "max_open_trades": {
+      "max_open_trades": 3
+    },
+    "buy": {
+      "ema_fast_period": 29,
+      "ema_slow_period": 60,
+      "rsi_buy_threshold": 39,
+      "rsi_period": 12,
+      "volume_factor": 1.886
+    },
+    "sell": {
+      "exit_rsi_long": 79,
+      "exit_rsi_short": 23,
+      "rsi_sell_threshold": 63
+    },
+    "roi": {
+      "0": 0.403,
+      "655": 0.188,
+      "3241": 0.04,
+      "7334": 0
+    },
+    "stoploss": {
+      "stoploss": -0.297
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2025-12-29 00:40:44.257677+00:00"
+}

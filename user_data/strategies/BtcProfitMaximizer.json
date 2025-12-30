@@ -1,0 +1,30 @@
+{
+  "strategy_name": "BtcProfitMaximizer",
+  "params": {
+    "stoploss": {
+      "stoploss": -0.1
+    },
+    "max_open_trades": {
+      "max_open_trades": 3
+    },
+    "buy": {
+      "buy_rsi": 23,
+      "ema_long_period": 151,
+      "ema_short_period": 21
+    },
+    "roi": {
+      "0": 0.498,
+      "1066": 0.254,
+      "1551": 0.098,
+      "7214": 0
+    },
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.338,
+      "trailing_stop_positive_offset": 0.357,
+      "trailing_only_offset_is_reached": false
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2025-12-29 00:42:51.871861+00:00"
+}

@@ -1,0 +1,27 @@
+{
+    "start": "1980-01-01",
+    "end": null,
+    "regime_sma": 200,
+    "ema_fast": 20,
+    "ema_slow": 50,
+    "breakout_entry": 55,
+    "breakout_exit": 20,
+    "atr_period": 20,
+    "atr_stop_mult": 2.5,
+    "risk_per_trade": 0.01,
+    "top_n": 4,
+    "momentum_lookback": 90,
+    "gross_leverage_cap": 3.0,
+    "per_asset_notional_cap": 0.25,
+    "allow_shorts": false,
+    "assets": [
+        {"symbol": "GSPC", "path": "data/GSPC.csv", "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "IXIC", "path": "data/IXIC.csv", "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "DJI",  "path": "data/DJI.csv",  "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "RUT",  "path": "data/RUT.csv",  "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "TLT",  "path": "data/TLT.csv",  "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "UUP",  "path": "data/UUP.csv",  "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "GLD",  "path": "data/GLD.csv",  "allow_short": false, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "DBC",  "path": "data/DBC.csv",  "allow_short": false, "fee_bps": 1.0, "slippage_bps": 2.0}
+    ]
+}

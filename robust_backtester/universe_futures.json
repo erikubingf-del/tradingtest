@@ -1,0 +1,31 @@
+{
+    "start": "1985-01-01",
+    "end": null,
+    "regime_sma": 200,
+    "ema_fast": 20,
+    "ema_slow": 50,
+    "breakout_entry": 55,
+    "breakout_exit": 20,
+    "atr_period": 20,
+    "atr_stop_mult": 2.5,
+    "risk_per_trade": 0.0075,
+    "top_n": 6,
+    "momentum_lookback": 90,
+    "gross_leverage_cap": 3.0,
+    "per_asset_notional_cap": 0.25,
+    "allow_shorts": true,
+    "assets": [
+        {"symbol": "ES",  "path": "data/ES_F.csv",  "allow_short": true, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "NQ",  "path": "data/NQ_F.csv",  "allow_short": true, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "RTY", "path": "data/RTY_F.csv", "allow_short": true, "fee_bps": 1.0, "slippage_bps": 2.0},
+        {"symbol": "ZN",  "path": "data/ZN_F.csv",  "allow_short": true, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "CL",  "path": "data/CL_F.csv",  "allow_short": true, "fee_bps": 1.5, "slippage_bps": 2.0},
+        {"symbol": "GC",  "path": "data/GC_F.csv",  "allow_short": true, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "SI",  "path": "data/SI_F.csv",  "allow_short": true, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "HG",  "path": "data/HG_F.csv",  "allow_short": true, "fee_bps": 1.0, "slippage_bps": 1.5},
+        {"symbol": "ZC",  "path": "data/ZC_F.csv",  "allow_short": true, "fee_bps": 1.5, "slippage_bps": 2.0},
+        {"symbol": "ZS",  "path": "data/ZS_F.csv",  "allow_short": true, "fee_bps": 1.5, "slippage_bps": 2.0},
+        {"symbol": "ZW",  "path": "data/ZW_F.csv",  "allow_short": true, "fee_bps": 1.5, "slippage_bps": 2.0},
+        {"symbol": "DX",  "path": "data/DX-Y.NYB.csv", "allow_short": true, "fee_bps": 1.5, "slippage_bps": 2.0}
+    ]
+}
