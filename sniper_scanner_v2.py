@@ -5,6 +5,7 @@ SNIPER SCANNER V2: Comprehensive Put Options Finder
 
 Scans 600+ stocks for put options opportunities.
 Includes S&P 500, Nasdaq 100, and high-volatility stocks.
+Now includes SIGNAL AGE to show when signal first appeared.
 
 Usage:
     python sniper_scanner_v2.py                    # Full scan
@@ -15,7 +16,7 @@ Usage:
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import argparse
 import warnings
 import time
@@ -141,6 +142,9 @@ def get_stock_data(ticker, retries=2):
             if len(df) < 200:
                 return None
 
+            df = df.reset_index()
+            df['Date'] = pd.to_datetime(df['Date']).dt.tz_localize(None)
+
             current_price = df['Close'].iloc[-1]
             high_52w = df['Close'].rolling(252, min_periods=200).max().iloc[-1]
 
@@ -167,6 +171,9 @@ def get_stock_data(ticker, retries=2):
             sma_50 = df['Close'].rolling(50).mean().iloc[-1]
             sma_200 = df['Close'].rolling(200).mean().iloc[-1] if len(df) >= 200 else current_price
 
+            # Calculate signal age (when did signal first appear?)
+            signal_age_info = calculate_signal_age(df)
+
             return {
                 'ticker': ticker,
                 'price': current_price,
@@ -178,12 +185,84 @@ def get_stock_data(ticker, retries=2):
                 'rsi': rsi,
                 'below_sma_50': current_price < sma_50,
                 'below_sma_200': current_price < sma_200,
+                'df': df,  # Keep dataframe for signal age calculation
+                **signal_age_info,
             }
         except Exception as e:
             if attempt < retries - 1:
                 time.sleep(0.5)
             continue
     return None
+
+
+def calculate_signal_age(df, min_momentum=1.0, min_drop=-0.50, max_rsi=60):
+    """Calculate when the signal first appeared."""
+    try:
+        # Calculate indicators for full history
+        df = df.copy()
+        df['high_52w'] = df['Close'].rolling(252, min_periods=200).max()
+        df['pct_from_high'] = (df['Close'] - df['high_52w']) / df['high_52w']
+        df['mom_12m'] = df['Close'].pct_change(252)
+
+        # RSI
+        delta = df['Close'].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+        rs = gain / loss
+        df['rsi'] = 100 - (100 / (1 + rs))
+
+        # Check signal for each day
+        df['signal'] = (
+            (df['mom_12m'] >= min_momentum) &
+            (df['pct_from_high'] <= min_drop) &
+            (df['rsi'] < max_rsi)
+        )
+
+        # Find first signal in recent history (last 60 days)
+        recent = df.tail(60)
+        signals = recent[recent['signal'] == True]
+
+        if len(signals) == 0:
+            return {
+                'signal_age_days': None,
+                'first_signal_date': None,
+                'first_signal_price': None,
+                'price_since_signal': None,
+                'action': 'NO_SIGNAL',
+            }
+
+        first_signal_date = signals['Date'].iloc[0]
+        first_signal_price = signals['Close'].iloc[0]
+        current_price = df['Close'].iloc[-1]
+        days_since = (datetime.now() - first_signal_date).days
+        price_change = (current_price / first_signal_price - 1) * 100
+
+        # Determine action
+        if days_since <= 5:
+            action = 'ENTER'
+        elif days_since <= 10 and price_change < 15:
+            action = 'ENTER'
+        elif days_since <= 14 and price_change < 10:
+            action = 'CAUTION'
+        else:
+            action = 'SKIP'
+
+        return {
+            'signal_age_days': days_since,
+            'first_signal_date': first_signal_date.strftime('%Y-%m-%d'),
+            'first_signal_price': first_signal_price,
+            'price_since_signal': price_change,
+            'action': action,
+        }
+
+    except Exception as e:
+        return {
+            'signal_age_days': None,
+            'first_signal_date': None,
+            'first_signal_price': None,
+            'price_since_signal': None,
+            'action': 'UNKNOWN',
+        }
 
 
 def check_entry_signal(data, min_momentum=100, min_drop=50, max_rsi=60):
@@ -266,35 +345,91 @@ def display_results(results):
         print("Run the scanner daily to catch opportunities.")
         return
 
-    # Sort by drop (bigger = better)
-    results = sorted(results, key=lambda x: x['pct_from_high'])
+    # Sort by action priority (ENTER first) then by drop
+    action_priority = {'ENTER': 0, 'CAUTION': 1, 'SKIP': 2, 'UNKNOWN': 3, 'NO_SIGNAL': 4}
+    results = sorted(results, key=lambda x: (action_priority.get(x.get('action', 'UNKNOWN'), 3), x['pct_from_high']))
 
     print("\n" + "="*100)
     print(f"🎯 FOUND {len(results)} PUT OPPORTUNITIES")
     print("="*100)
 
-    print(f"\n{'Ticker':<7} {'Price':<9} {'MktCap':<9} {'Mom12m':<9} {'Drop':<9} {'RSI':<6} {'Premium':<10} {'Signals'}")
+    # Signal age legend
+    print("\n📊 ACTION GUIDE: ✅ ENTER = Fresh signal | ⚠️ CAUTION = Consider entry | ❌ SKIP = Too old")
+
+    print(f"\n{'Ticker':<7} {'Price':<9} {'Drop':<8} {'Mom12m':<8} {'RSI':<5} {'Signal Age':<12} {'Since Signal':<14} {'Action'}")
     print("-"*100)
 
     for r in results:
-        sig_str = ', '.join(r['signals'][:2])
-        print(f"{r['ticker']:<7} ${r['price']:<8.2f} ${r['market_cap_B']:<7.1f}B {r['momentum_12m']:>+6.0f}% {r['pct_from_high']:>+6.0f}% {r['rsi']:>5.0f} ${r['premium_dollar']:>8,.0f} {sig_str}")
+        # Format signal age
+        age = r.get('signal_age_days')
+        if age is not None:
+            age_str = f"{age}d ago"
+            first_date = r.get('first_signal_date', '')[:10]
+        else:
+            age_str = "N/A"
+            first_date = ""
 
-    # Top 3 recommendations
+        # Format price change since signal
+        price_chg = r.get('price_since_signal')
+        if price_chg is not None:
+            price_chg_str = f"{price_chg:+.1f}%"
+        else:
+            price_chg_str = "N/A"
+
+        # Format action with emoji
+        action = r.get('action', 'UNKNOWN')
+        if action == 'ENTER':
+            action_str = "✅ ENTER"
+        elif action == 'CAUTION':
+            action_str = "⚠️  CAUTION"
+        elif action == 'SKIP':
+            action_str = "❌ SKIP"
+        else:
+            action_str = "❓ CHECK"
+
+        print(f"{r['ticker']:<7} ${r['price']:<7.2f} {r['pct_from_high']:>+5.0f}% {r['momentum_12m']:>+6.0f}% {r['rsi']:>4.0f} {age_str:<12} {price_chg_str:<14} {action_str}")
+
+    # Detailed recommendations
     print("\n" + "="*100)
-    print("TOP RECOMMENDATIONS")
+    print("DETAILED ANALYSIS")
     print("="*100)
 
-    for r in results[:3]:
+    for r in results:
+        action = r.get('action', 'UNKNOWN')
+        age = r.get('signal_age_days', 'N/A')
+        first_date = r.get('first_signal_date', 'N/A')
+        first_price = r.get('first_signal_price')
+        price_chg = r.get('price_since_signal')
+
+        if action == 'ENTER':
+            emoji = "✅"
+            recommendation = "ENTER NOW - Fresh signal, good entry point"
+        elif action == 'CAUTION':
+            emoji = "⚠️"
+            recommendation = "CAUTION - Signal is aging, consider entry but not ideal"
+        elif action == 'SKIP':
+            emoji = "❌"
+            recommendation = "SKIP - Signal too old or price moved too much"
+        else:
+            emoji = "❓"
+            recommendation = "Check manually"
+
+        price_at_signal = f"${first_price:.2f}" if first_price else "N/A"
+        price_chg_str = f"{price_chg:+.1f}%" if price_chg is not None else "N/A"
+
         print(f"""
-📍 {r['ticker']}
-   Price: ${r['price']:.2f} (down {abs(r['pct_from_high']):.0f}% from ${r['high_52w']:.2f} high)
-   12M Momentum: {r['momentum_12m']:+.0f}%
-   RSI: {r['rsi']:.0f}
+{emoji} {r['ticker']}
+   Current Price: ${r['price']:.2f} (down {abs(r['pct_from_high']):.0f}% from ${r['high_52w']:.2f} high)
+   12M Momentum: {r['momentum_12m']:+.0f}%  |  RSI: {r['rsi']:.0f}
+
+   Signal First Appeared: {first_date} ({age} days ago)
+   Price at Signal: {price_at_signal}
+   Price Change Since: {price_chg_str}
+
+   {recommendation}
 
    TRADE: Buy 6-month ATM Put @ ${r['price']:.0f} strike
    Est. Premium: ${r['premium_dollar']:,.0f}/contract ({r['premium_pct']*100:.0f}%)
-   Max Risk: ${r['premium_dollar']:,.0f}
 """)
 
 
