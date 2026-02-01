@@ -1369,26 +1369,320 @@ def print_bitcoin_on_chain_analysis(analysis: Dict):
     print(f"\n💡 KEY INSIGHT:")
     print(proj["key_insight"])
 
-    print(f"\n📚 ACADEMIC METHODOLOGY NOTES:")
+
+def calculate_bitcoin_gold_parity_model() -> Dict:
+    """
+    GOLD MARKET SHARE CAPTURE MODEL
+
+    The question: If Bitcoin captures X% of gold's market, what is the price?
+
+    This is the most CALCULABLE Bitcoin valuation because:
+    - Gold market size is KNOWN ($13-14 trillion)
+    - Bitcoin supply is FIXED (21M, ~16M circulating)
+    - We only need to estimate MARKET SHARE CAPTURE
+
+    This is similar to commodity analysis:
+    - Copper: What % of EV market = copper demand
+    - Bitcoin: What % of gold market = Bitcoin demand
+
+    Academic source: "Bitcoin as Digital Gold" - Fidelity Digital Assets (2020)
+    """
+
+    analysis = {}
+
+    # =========================================================================
+    # KNOWN CONSTANTS
+    # =========================================================================
+
+    # Gold market (2024-2025 estimates)
+    gold_market = {
+        "total_above_ground_gold_tonnes": 212_582,  # World Gold Council
+        "gold_price_per_oz": 2000,
+        "oz_per_tonne": 32_150,
+        "total_gold_value_usd": 212_582 * 32_150 * 2000,  # ~$13.7 trillion
+        "investment_gold_pct": 45,  # % held as investment (bars, coins, ETFs)
+        "jewelry_pct": 44,
+        "central_bank_pct": 17,
+        "industrial_pct": 8,
+    }
+
+    gold_investment_value = gold_market["total_gold_value_usd"] * 0.45  # ~$6.2T
+
+    # Bitcoin supply (known with certainty)
+    bitcoin_supply = {
+        "total_supply_cap": 21_000_000,
+        "current_mined": 19_600_000,
+        "estimated_lost": 3_700_000,  # Chainalysis estimate
+        "effective_circulating": 15_900_000,
+        "future_supply_2035": 20_500_000,  # Near max
+    }
+
+    analysis["market_data"] = {
+        "gold_total_market_usd": gold_market["total_gold_value_usd"],
+        "gold_investment_market_usd": gold_investment_value,
+        "bitcoin_circulating_supply": bitcoin_supply["effective_circulating"],
+        "bitcoin_2035_supply": bitcoin_supply["future_supply_2035"],
+    }
+
+    # =========================================================================
+    # SCENARIO ANALYSIS: MARKET SHARE CAPTURE
+    # =========================================================================
+
+    scenarios = []
+
+    # Current state
+    current_btc_mcap = 100_000 * 19_600_000  # ~$2T
+    current_gold_share = (current_btc_mcap / gold_market["total_gold_value_usd"]) * 100
+
+    scenarios.append({
+        "name": "CURRENT STATE",
+        "year": 2025,
+        "gold_share_pct": current_gold_share,
+        "implied_mcap": current_btc_mcap,
+        "implied_price": 100_000,
+        "description": "Bitcoin currently at ~15% of gold market"
+    })
+
+    # Scenario modeling
+    share_scenarios = [
+        {"name": "Conservative", "gold_share_pct": 25, "probability": 0.30},
+        {"name": "Base Case", "gold_share_pct": 50, "probability": 0.40},
+        {"name": "Optimistic", "gold_share_pct": 75, "probability": 0.20},
+        {"name": "Full Parity", "gold_share_pct": 100, "probability": 0.10},
+        {"name": "Exceeds Gold", "gold_share_pct": 150, "probability": 0.05},
+    ]
+
+    for scenario in share_scenarios:
+        share = scenario["gold_share_pct"] / 100
+        implied_mcap = gold_market["total_gold_value_usd"] * share
+
+        # Price with current supply
+        price_current_supply = implied_mcap / bitcoin_supply["effective_circulating"]
+
+        # Price with 2035 supply (more coins mined, fewer "lost" as % of total)
+        future_circulating = bitcoin_supply["future_supply_2035"] - bitcoin_supply["estimated_lost"]
+        price_2035_supply = implied_mcap / future_circulating
+
+        scenarios.append({
+            "name": scenario["name"],
+            "gold_share_pct": scenario["gold_share_pct"],
+            "probability": scenario["probability"],
+            "implied_mcap_usd": implied_mcap,
+            "price_current_supply": price_current_supply,
+            "price_2035_supply": price_2035_supply,
+            "multiple_from_current": price_current_supply / 100_000,
+        })
+
+    analysis["scenarios"] = scenarios[1:]  # Exclude current state
+    analysis["current_state"] = scenarios[0]
+
+    # =========================================================================
+    # THE 50% GOLD SCENARIO (User's Question)
+    # =========================================================================
+
+    fifty_pct_scenario = {
+        "assumption": "Bitcoin captures 50% of gold's store of value role",
+        "gold_market_usd": gold_market["total_gold_value_usd"],
+        "target_share": 0.50,
+        "implied_btc_mcap": gold_market["total_gold_value_usd"] * 0.50,
+        "circulating_supply": bitcoin_supply["effective_circulating"],
+    }
+
+    fifty_pct_price = fifty_pct_scenario["implied_btc_mcap"] / fifty_pct_scenario["circulating_supply"]
+
+    fifty_pct_scenario["implied_price_usd"] = fifty_pct_price
+    fifty_pct_scenario["current_price"] = 100_000
+    fifty_pct_scenario["upside_multiple"] = fifty_pct_price / 100_000
+    fifty_pct_scenario["upside_pct"] = (fifty_pct_price / 100_000 - 1) * 100
+
+    # Required CAGR to reach this price
+    years_to_target = 10
+    required_cagr = (fifty_pct_price / 100_000) ** (1/years_to_target) - 1
+
+    fifty_pct_scenario["years_to_target"] = years_to_target
+    fifty_pct_scenario["required_cagr"] = required_cagr * 100
+
+    # Compare to historical growth rates
+    fifty_pct_scenario["historical_comparison"] = {
+        "btc_10yr_cagr": 80,  # Historical
+        "realized_price_cagr": 29,  # True demand growth
+        "required_cagr": required_cagr * 100,
+        "feasibility": "ACHIEVABLE" if required_cagr * 100 < 30 else "AGGRESSIVE" if required_cagr * 100 < 50 else "VERY AGGRESSIVE"
+    }
+
+    analysis["fifty_percent_gold"] = fifty_pct_scenario
+
+    # =========================================================================
+    # PROBABILITY-WEIGHTED EXPECTED VALUE
+    # =========================================================================
+
+    expected_price = sum(
+        s["price_current_supply"] * s["probability"]
+        for s in analysis["scenarios"]
+    )
+
+    analysis["expected_value"] = {
+        "probability_weighted_price": expected_price,
+        "current_price": 100_000,
+        "expected_upside_pct": (expected_price / 100_000 - 1) * 100,
+        "methodology": "Sum of (scenario price × probability)"
+    }
+
+    # =========================================================================
+    # GOLD vs BITCOIN: FUNDAMENTAL COMPARISON
+    # =========================================================================
+
+    analysis["gold_vs_bitcoin"] = {
+        "properties": [
+            {"property": "Scarcity", "gold": "Limited mining, ~2%/yr growth", "bitcoin": "Fixed 21M cap, 0% after 2140", "advantage": "BITCOIN"},
+            {"property": "Divisibility", "gold": "Difficult below 1oz", "bitcoin": "8 decimal places (satoshis)", "advantage": "BITCOIN"},
+            {"property": "Portability", "gold": "Heavy, requires custody", "bitcoin": "Instant global transfer", "advantage": "BITCOIN"},
+            {"property": "Verifiability", "gold": "Requires assay", "bitcoin": "Cryptographic proof", "advantage": "BITCOIN"},
+            {"property": "History", "gold": "5,000+ years", "bitcoin": "16 years", "advantage": "GOLD"},
+            {"property": "Volatility", "gold": "Low (~15% annual)", "bitcoin": "High (~60% annual)", "advantage": "GOLD"},
+            {"property": "Regulatory", "gold": "Fully accepted", "bitcoin": "Evolving", "advantage": "GOLD"},
+            {"property": "Industrial Use", "gold": "Yes (8%)", "bitcoin": "No", "advantage": "GOLD"},
+        ],
+        "thesis": """
+        Bitcoin has SUPERIOR monetary properties but INFERIOR Lindy effect (history).
+        Over time, if Bitcoin proves reliable, the Lindy disadvantage shrinks.
+        This is why market share capture is a TIME-DEPENDENT probability.
+        """
+    }
+
+    # =========================================================================
+    # TIME-BASED PROBABILITY EVOLUTION
+    # =========================================================================
+
+    # As Bitcoin survives longer, probability of gold parity increases
+    time_evolution = []
+    base_probability = 0.10  # Starting probability of 50% gold parity
+
+    for year in range(2025, 2041):
+        years_survived = year - 2009  # Bitcoin genesis
+        # Probability increases with survival (Lindy effect)
+        # P = base + (1-base) * (1 - e^(-years/20))
+        survival_factor = 1 - (2.718 ** (-years_survived / 25))
+        adjusted_probability = base_probability + (0.60 - base_probability) * survival_factor
+
+        time_evolution.append({
+            "year": year,
+            "years_survived": years_survived,
+            "probability_50pct_gold": min(adjusted_probability, 0.60),
+        })
+
+    analysis["time_evolution"] = time_evolution
+
+    return analysis
+
+
+def print_bitcoin_gold_parity(analysis: Dict):
+    """Print the gold market share capture analysis"""
+
+    print("\n" + "="*70)
+    print("BITCOIN GOLD PARITY MODEL: SUPPLY/DEMAND CALCULATION")
+    print("If Bitcoin captures X% of gold market, what is the price?")
+    print("="*70)
+
+    # Market data
+    md = analysis["market_data"]
+    print(f"\n📊 MARKET DATA (Known Values)")
+    print(f"   Gold Total Market: ${md['gold_total_market_usd']/1e12:.1f} Trillion")
+    print(f"   Gold Investment Market: ${md['gold_investment_market_usd']/1e12:.1f} Trillion")
+    print(f"   Bitcoin Circulating Supply: {md['bitcoin_circulating_supply']:,} BTC")
+
+    # Current state
+    cs = analysis["current_state"]
+    print(f"\n📍 CURRENT STATE")
+    print(f"   Bitcoin Market Cap: ${cs['implied_mcap']/1e12:.1f}T")
+    print(f"   Current % of Gold: {cs['gold_share_pct']:.1f}%")
+
+    # Scenarios
+    print(f"\n{'='*70}")
+    print("🎯 SCENARIO ANALYSIS: GOLD MARKET SHARE CAPTURE")
+    print(f"{'='*70}")
+    print(f"\n   {'Scenario':<15} | {'Gold %':>8} | {'Prob':>6} | {'Price':>12} | {'Multiple':>8}")
+    print(f"   {'-'*15}-+-{'-'*8}-+-{'-'*6}-+-{'-'*12}-+-{'-'*8}")
+
+    for s in analysis["scenarios"]:
+        print(f"   {s['name']:<15} | {s['gold_share_pct']:>7}% | {s['probability']*100:>5.0f}% | ${s['price_current_supply']:>10,.0f} | {s['multiple_from_current']:>7.1f}x")
+
+    # 50% Gold scenario (detailed)
+    fg = analysis["fifty_percent_gold"]
+    print(f"\n{'='*70}")
+    print("💰 DETAILED: 50% GOLD MARKET SHARE SCENARIO")
+    print(f"{'='*70}")
+    print(f"\n   Assumption: {fg['assumption']}")
+    print(f"\n   CALCULATION:")
+    print(f"      Gold Market:        ${fg['gold_market_usd']/1e12:.1f} Trillion")
+    print(f"      Target Share:       {fg['target_share']*100:.0f}%")
+    print(f"      Implied BTC MCap:   ${fg['implied_btc_mcap']/1e12:.1f} Trillion")
+    print(f"      Circulating Supply: {fg['circulating_supply']:,} BTC")
+    print(f"      ─────────────────────────────────────")
+    print(f"      IMPLIED PRICE:      ${fg['implied_price_usd']:,.0f}")
+    print(f"\n   FROM CURRENT:")
+    print(f"      Current Price:      ${fg['current_price']:,}")
+    print(f"      Upside Multiple:    {fg['upside_multiple']:.1f}x")
+    print(f"      Upside Percent:     +{fg['upside_pct']:.0f}%")
+    print(f"\n   FEASIBILITY (over {fg['years_to_target']} years):")
+    print(f"      Required CAGR:      {fg['required_cagr']:.1f}%")
+    print(f"      Historical BTC CAGR: {fg['historical_comparison']['btc_10yr_cagr']}%")
+    print(f"      Realized Price CAGR: {fg['historical_comparison']['realized_price_cagr']}%")
+    print(f"      Assessment:         {fg['historical_comparison']['feasibility']}")
+
+    # Expected value
+    ev = analysis["expected_value"]
+    print(f"\n{'='*70}")
+    print("📈 PROBABILITY-WEIGHTED EXPECTED VALUE")
+    print(f"{'='*70}")
+    print(f"   Expected Price (probability-weighted): ${ev['probability_weighted_price']:,.0f}")
+    print(f"   Current Price: ${ev['current_price']:,}")
+    print(f"   Expected Upside: +{ev['expected_upside_pct']:.0f}%")
+
+    # Gold vs Bitcoin comparison
+    print(f"\n{'='*70}")
+    print("⚖️  GOLD vs BITCOIN: PROPERTY COMPARISON")
+    print(f"{'='*70}")
+    print(f"\n   {'Property':<15} | {'Gold':<25} | {'Bitcoin':<25} | {'Winner':<8}")
+    print(f"   {'-'*15}-+-{'-'*25}-+-{'-'*25}-+-{'-'*8}")
+
+    for prop in analysis["gold_vs_bitcoin"]["properties"]:
+        print(f"   {prop['property']:<15} | {prop['gold']:<25} | {prop['bitcoin']:<25} | {prop['advantage']:<8}")
+
+    print(f"\n   THESIS: {analysis['gold_vs_bitcoin']['thesis']}")
+
+    # Time evolution
+    print(f"\n{'='*70}")
+    print("📅 TIME-DEPENDENT PROBABILITY (Lindy Effect)")
+    print(f"{'='*70}")
+    print(f"\n   As Bitcoin survives longer, probability of gold parity increases:")
+    print(f"\n   Year  | Years Survived | P(50% Gold)")
+    print(f"   ------|----------------|------------")
+    for te in analysis["time_evolution"][::3]:  # Every 3 years
+        print(f"   {te['year']}  |       {te['years_survived']:>2}       |    {te['probability_50pct_gold']*100:.0f}%")
+
+    print(f"\n💡 KEY INSIGHT:")
     print("""
-    This analysis uses established on-chain metrics from:
-    - Coin Metrics (Realized Cap methodology)
-    - Glassnode (HODL Waves, MVRV)
-    - Cambridge Centre for Alternative Finance
-    - MIT Digital Currency Initiative
+    This is the MOST CALCULABLE Bitcoin valuation model because:
 
-    The core insight: Bitcoin has two price components:
-    1. FUNDAMENTAL VALUE: Realized price, network activity, security spend
-    2. SPECULATION: The premium above realized value (MVRV > 1)
+    1. SUPPLY IS KNOWN: 21M cap, ~16M circulating
+    2. DEMAND IS DEFINED: X% of gold's $13.7T market
+    3. PRICE = Market Cap / Supply (simple division)
 
-    Unlike commodities where demand is industrial and thus "real",
-    Bitcoin's "true demand" is defined by long-term holders who treat
-    it as a store of value, not short-term traders seeking profit.
+    The ONLY variable is: What % of gold market will Bitcoin capture?
 
-    When MVRV < 1 (price below realized): Speculation is NEGATIVE
-    When MVRV = 1.0-1.5: Fair value zone
-    When MVRV = 1.5-2.5: Moderate speculation
-    When MVRV > 3.0: High speculation, caution warranted
+    At 50% gold market share:
+    - Implied BTC market cap: $6.85 Trillion
+    - Implied BTC price: ~$430,000
+    - Required 10-year CAGR: ~16% (very achievable)
+
+    This makes Bitcoin's upside CALCULABLE in the same way we
+    calculate copper demand from EV adoption. The difference:
+    - Copper: MUST be bought (industrial necessity)
+    - Bitcoin: CHOICE to buy (store of value preference)
+
+    But as Bitcoin's Lindy effect grows, the PROBABILITY of
+    capturing gold market share increases predictably.
     """)
 
 
@@ -1501,6 +1795,13 @@ def main():
     print("="*70)
     btc_on_chain = calculate_bitcoin_on_chain_valuation()
     print_bitcoin_on_chain_analysis(btc_on_chain)
+
+    # Bitcoin gold parity model
+    print("\n\n" + "="*70)
+    print("PART 3C: BITCOIN GOLD PARITY MODEL")
+    print("="*70)
+    btc_gold = calculate_bitcoin_gold_parity_model()
+    print_bitcoin_gold_parity(btc_gold)
 
     # Comparison
     print("\n\n" + "="*70)
